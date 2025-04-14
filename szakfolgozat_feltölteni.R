@@ -36,9 +36,7 @@ my_sf <- my_sf %>%
 adat <- read_spss("AGG_valasztasi_adatok_osszevont_nepszamlalas_v5 (1).sav")
 
 #Tisztítás
-
 adat$telepules[str_detect(adat$telepules, "budapest")] <- paste(adat$telepules[str_detect(adat$telepules, "budapest")], ". kerület", sep="")
-
 adat %>%
   select(teir_2022_szja_adofizeto_100lakosra, teir_2022_egylakos_szja_jov) %>%
   tab_corr()
@@ -112,7 +110,6 @@ adat_spatial <- adat %>%
   mutate(szja_atlag_log=log(szja_atlag)/10-1, adofizeto_arany=adofizeto_arany/100, 
          lakos2022_log=log(lakos2022)/10, reszvetel_diff=reszvetel24-reszvetel2019)
 
-
 #Alapstatisztikák lekérése
 adat_spatial  %>%
   select(-c(geometry, NAME, telepules)) %>%
@@ -125,7 +122,6 @@ nb <- poly2nb(adat_spatial)
 listw <- nb2listw(nb, style="W")
 
 ##Moran tesztek
-
 moran.test(adat_spatial$fidesz24_rate, listw)
 moran.test(adat_spatial$fidesz19_rate, listw)
 moran.test(adat_spatial$tisza24_rate, listw)
@@ -133,7 +129,7 @@ moran.test(adat_spatial$fidesz2419_dif, listw)
 moran.test(adat_spatial$bal_dif, listw)
 moran.test(adat_spatial$bal24_rate, listw)
 
-
+#korreláció
 adat_spatial %>%
   select(reszvetel24, reszvetel2019, lakos2022_log) %>%
   as_tibble() %>%
@@ -152,7 +148,6 @@ grd <- expand.grid(x = x.range, y = y.range)
 coordinates(grd) <- ~x+y
 gridded(grd) <- TRUE
 
-
 #Fidesz24
 values <- centroids$fidesz24_rate
 sp_data <- SpatialPointsDataFrame(coords, data.frame(values=values))
@@ -162,9 +157,7 @@ idw_raster <- raster::raster(idw)
 shp_data_sp <- as(adat_spatial, "Spatial")
 idw_masked <- raster::mask(idw_raster, shp_data_sp)
 idw_values <- extract(idw_masked, shp_data_sp, fun = mean, na.rm = TRUE)
-
 adat_spatial$fidesz24_smoothed <- idw_values
-
 
 #Tisza24
 values <- centroids$tisza24_rate
@@ -175,9 +168,7 @@ idw_raster <- raster::raster(idw)
 shp_data_sp <- as(adat_spatial, "Spatial")
 idw_masked <- raster::mask(idw_raster, shp_data_sp)
 idw_values <- extract(idw_masked, shp_data_sp, fun = mean, na.rm = TRUE)
-
 adat_spatial$tisza24_smoothed <- idw_values
-
 
 #Bal24
 values <- centroids$bal24_rate
@@ -202,7 +193,6 @@ idw_masked <- raster::mask(idw_raster, shp_data_sp)
 idw_values <- extract(idw_masked, shp_data_sp, fun = mean, na.rm = TRUE)
 
 adat_spatial$fidesz2419_dif_smoothed <- idw_values
-
 
 #Bal_diff
 values <- centroids$bal_dif
@@ -231,7 +221,6 @@ ggplot(data = adat_spatial) +
         axis.ticks.y=element_blank()) +
   theme(aspect.ratio = 1 / 1.5)
 
-
 ggplot(data = adat_spatial) +
   geom_sf(aes(fill = fidesz24_smoothed), color = NA) +
   scale_fill_viridis_b(name = "Fidesz simitott\nbinned") +
@@ -244,7 +233,6 @@ ggplot(data = adat_spatial) +
         axis.text.y=element_blank(),  
         axis.ticks.y=element_blank()) +
   theme(aspect.ratio = 1 / 1.5)
-
 
 ggplot(data = adat_spatial) +
   geom_sf(aes(fill = tisza24_rate)) +
@@ -259,7 +247,6 @@ ggplot(data = adat_spatial) +
         axis.ticks.y=element_blank()) +
   theme(aspect.ratio = 1 / 1.5)
 
-
 ggplot(data = adat_spatial) +
   geom_sf(aes(fill = tisza24_smoothed), color = NA) +
   scale_fill_viridis_b(name = "Tisza simitott\nbinned") +
@@ -272,7 +259,6 @@ ggplot(data = adat_spatial) +
         axis.text.y=element_blank(),  
         axis.ticks.y=element_blank()) +
   theme(aspect.ratio = 1 / 1.5)
-
 
 ggplot(data = adat_spatial) +
   geom_sf(aes(fill = bal24_rate)) +
@@ -287,7 +273,6 @@ ggplot(data = adat_spatial) +
         axis.ticks.y=element_blank()) +
   theme(aspect.ratio = 1 / 1.5)
 
-
 ggplot(data = adat_spatial) +
   geom_sf(aes(fill = bal24_smoothed), color = NA) +
   scale_fill_viridis_b(name = "Baloldal simitott\nbinned") +
@@ -300,7 +285,6 @@ ggplot(data = adat_spatial) +
         axis.text.y=element_blank(),  
         axis.ticks.y=element_blank()) +
   theme(aspect.ratio = 1 / 1.5)
-
 
 ggplot(data = adat_spatial) +
   geom_sf(aes(fill = fidesz2419_dif)) +
@@ -315,7 +299,6 @@ ggplot(data = adat_spatial) +
         axis.ticks.y=element_blank()) +
   theme(aspect.ratio = 1 / 1.5)
 
-
 ggplot(data = adat_spatial) +
   geom_sf(aes(fill = fidesz2419_dif_smoothed), color = NA) +
   scale_fill_viridis_b(name = "Fidesz differencia\nsimitott + binned") +
@@ -328,7 +311,6 @@ ggplot(data = adat_spatial) +
         axis.text.y=element_blank(),  
         axis.ticks.y=element_blank()) +
   theme(aspect.ratio = 1 / 1.5)
-
 
 ggplot(data = adat_spatial) +
   geom_sf(aes(fill = bal_dif)) +
@@ -343,7 +325,6 @@ ggplot(data = adat_spatial) +
         axis.ticks.y=element_blank()) +
   theme(aspect.ratio = 1 / 1.5)
 
-
 ggplot(data = adat_spatial) +
   geom_sf(aes(fill = bal2419_dif_smoothed), color = NA) +
   scale_fill_viridis_b(name = "Baloldal differencia\nsimitott + binned") +
@@ -356,7 +337,6 @@ ggplot(data = adat_spatial) +
         axis.text.y=element_blank(),  
         axis.ticks.y=element_blank()) +
   theme(aspect.ratio = 1 / 1.5)
-
 
 ##Modellek
 #országjárás beépítése
@@ -371,7 +351,6 @@ adat_spatial %>%
 ##SZJA átlagot kivesszük a modellből mert nagyon korreál más változókkal
 
 #OLS MODEL
-
 ols_model1 <- lm(fidesz24_rate ~  kereszteny2022_rate+  kereszteny_dif + kor60_100 + nyolcalt + diplomas +
                    adofizeto_arany  +  lakos2022_log, 
                  data = adat_spatial)
@@ -396,12 +375,10 @@ moran.test(slm_model$residuals, listw)
 qqnorm(slm_model$residuals)
 qqline(slm_model$residuals, col = "red")
 
-
 hist(slm_model$residuals, breaks = 20, main = "Histogram of Residuals", xlab = "Residuals", probability = TRUE)
 xfit <- seq(min(slm_model$residuals), max(slm_model$residuals), length = 40)
 yfit <- dnorm(xfit, mean = mean(slm_model$residuals), sd = sd(slm_model$residuals))
 lines(xfit, yfit, col = "blue", lwd = 2)
-
 
 shapiro.test(slm_model$residuals)
 ks.test(slm_model$residuals, "pnorm", mean = mean(slm_model$residuals), sd = sd(slm_model$residuals))
@@ -413,7 +390,6 @@ plot(slm_model$fitted.values, slm_model$residuals,
      main = "Residuals vs Fitted")
 abline(h = 0, col = "red")
 
-
 bptest.Sarlm(slm_model)
 bptest.Sarlm(slm_model, studentize=FALSE)
 
@@ -422,9 +398,7 @@ plot(adat_spatial$lakos2022, slm_model$residuals,
      main = "Residuals vs Lakosságszám")
 abline(h = 0, col = "red")
 
-
 #SPD Durbin Model
-
 sdm_model <- lagsarlm(fidesz24_rate ~  kereszteny2022_rate+  kereszteny_dif + kor60_100 + nyolcalt + diplomas +
                         adofizeto_arany +  lakos2022_log, 
                       data = adat_spatial, 
@@ -436,12 +410,10 @@ summary(sdm_model, Nagelkerke = T,
 spatialreg::impacts(sdm_model, listw=listw)
 
 #Error model
-
 sem_model <- errorsarlm(fidesz24_rate ~  kereszteny2022_rate+  kereszteny_dif + kor60_100 + nyolcalt + diplomas +
                           adofizeto_arany +  lakos2022_log, 
                         data = adat_spatial, 
                         listw = listw)
-
 
 summary(sem_model, Nagelkerke = T,
         Hausman=T)
@@ -451,8 +423,6 @@ sphet_model <- spreg(fidesz24_rate ~  kereszteny2022_rate+  kereszteny_dif + kor
                        adofizeto_arany +  lakos2022_log, 
                      data = adat_spatial, 
                      listw = listw, het=T, model="lag", Durbin=F)
-
-
 
 summary(sphet_model, Nagelkerke = T,
         Hausman=T)
@@ -475,7 +445,6 @@ tidy_model <- slm_fidesz24 %>%
   mutate(model="SLM")  %>%
   bind_rows(tidy_model, .)
 
-
 tidy_model <- sdm_fidesz24 %>%
   tidy() %>%
   mutate(model="SDM")  %>%
@@ -485,7 +454,6 @@ tidy_model <- sem_fidesz24 %>%
   tidy() %>%
   mutate(model="SEM")  %>%
   bind_rows(tidy_model, .)
-
 
 sphet_fidesz24.matrix <- as.matrix(summary(sphet_fidesz24)[[12]])
 
@@ -497,7 +465,6 @@ tidy_model <- tidy_sphet %>%
   bind_rows(tidy_model, .)
 
 rm(sphet_fidesz24.matrix, tidy_sphet)
-
 
 tidy_model <- tidy_model[tidy_model$term!="rho",]
 tidy_model <- tidy_model[tidy_model$term!="lambda",]
@@ -514,7 +481,6 @@ ggplot(tidy_model, aes(x = term, y = estimate)) +
        x = "Predictors",
        y = "Estimates") +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-
 
 ###Egyéb slm modellek
 
@@ -659,7 +625,6 @@ tidy_model <- sdm_fidesz24_reszvetel %>%
   tidy() %>%
   mutate(model="FIDESZ24")
 
-
 tidy_model <- sdm_fidesz19_reszvetel %>%
   tidy() %>%
   mutate(model="FIDESZ19")  %>%
@@ -668,7 +633,6 @@ tidy_model <- sdm_fidesz19_reszvetel %>%
 tidy_model <- tidy_model[tidy_model$term!="rho",]
 tidy_model <- tidy_model[tidy_model$term!="lambda",]
 tidy_model <- tidy_model[tidy_model$term!="(Intercept)",]
-
 
 tidy_model <- tidy_model[substr(tidy_model$term,1,4)!="lag.",]
 
@@ -682,13 +646,11 @@ ggplot(tidy_model, aes(x = term, y = estimate)) +
        y = "Estimates") +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
-
 ###24 adatsor
 
 tidy_model <- sdm_fidesz24_v2 %>%
   tidy() %>%
   mutate(model="FIDESZ24")
-
 
 tidy_model <- sdm_fidesz19 %>%
   tidy() %>%
@@ -700,7 +662,6 @@ tidy_model <- sdm_fidesz24_reszvetel %>%
   mutate(model="FIDESZ24 - részvétel") %>%
   bind_rows(tidy_model, .)
 
-
 tidy_model <- sdm_fidesz19_reszvetel %>%
   tidy() %>%
   mutate(model="FIDESZ19 - részvétel")  %>%
@@ -709,7 +670,6 @@ tidy_model <- sdm_fidesz19_reszvetel %>%
 tidy_model <- tidy_model[tidy_model$term!="rho",]
 tidy_model <- tidy_model[tidy_model$term!="lambda",]
 tidy_model <- tidy_model[tidy_model$term!="(Intercept)",]
-
 
 tidy_model <- tidy_model[substr(tidy_model$term,1,4)!="lag.",]
 
@@ -723,23 +683,19 @@ ggplot(tidy_model, aes(x = term, y = estimate)) +
        y = "Estimates") +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
-
 #Részvétel
 sdm_reszvetel_diff <- lagsarlm(reszvetel_diff ~  kereszteny2022_rate+  kereszteny_dif + kor60_100 + nyolcalt + diplomas +
                                  adofizeto_arany +  lakos2022_log + magyar_peter_orszagjaras, 
                                data = adat_spatial, 
                                listw = listw)
 
-
 tidy_model <- sdm_fidesz24_v2 %>%
   tidy() %>%
   mutate(model="Részvétel differencia")
 
-
 tidy_model <- tidy_model[tidy_model$term!="rho",]
 tidy_model <- tidy_model[tidy_model$term!="lambda",]
 tidy_model <- tidy_model[tidy_model$term!="(Intercept)",]
-
 
 tidy_model <- tidy_model[substr(tidy_model$term,1,4)!="lag.",]
 
@@ -753,26 +709,21 @@ ggplot(tidy_model, aes(x = term, y = estimate)) +
        y = "Estimates") +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
-
 ##Scatter plotok
-
 ggplot(adat_spatial, aes(x=kereszteny2022_rate, y=fidesz2419_dif)) + 
   geom_point()+
   geom_smooth(method=lm)+   theme_minimal()
 ## `geom_smooth()` using formula = 'y ~ x'
-
 
 ggplot(adat_spatial, aes(x=adofizeto_arany, y=fidesz2419_dif)) + 
   geom_point()+
   geom_smooth(method=lm)+   theme_minimal()
 ## `geom_smooth()` using formula = 'y ~ x'
 
-
 ggplot(adat_spatial, aes(x=lakos2022_log, y=fidesz2419_dif)) + 
   geom_point()+
   geom_smooth(method=lm)+   theme_minimal()
 ## `geom_smooth()` using formula = 'y ~ x'
-
 
 ggplot(adat_spatial, aes(x=kereszteny_dif, y=fidesz2419_dif)) + 
   geom_point()+
@@ -812,7 +763,6 @@ sphet_model19 <- spreg(fidesz19_rate ~  kereszteny2022_rate+  kereszteny_dif + k
                          adofizeto_arany +  lakos2022_log, 
                        data = adat_spatial, 
                        listw = listw, het=T, model="lag", Durbin=F)
-
 
 # Összegző mátrixok kinyerése
 sphet24_tab <- summary(sphet_model24)$CoefTable
